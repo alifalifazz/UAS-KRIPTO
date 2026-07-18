@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-AES — Simulasi Kriptografi</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">CL</span>Clypher</a>
+    <nav class="nav-links">
+      <a href="des.html">DES</a>
+      <a href="sdes.html">S-DES</a>
+      <a href="aes.html">AES</a>
+      <a href="saes.html" class="active">S-AES</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="mod-header">
+    <span class="badge">MODUL 4 / 4</span>
+    <h1>Simplified AES (S-AES)</h1>
+    <p>Versi sederhana AES untuk pembelajaran — state 2×2 nibble, 2 ronde, kunci 16 bit, aritmetika GF(2⁴).</p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="dot"></span>Input</h2>
+    <div class="mode-toggle" style="margin-bottom:18px;">
+      <button data-mode="enc" class="active">Enkripsi</button>
+      <button data-mode="dec">Dekripsi</button>
+    </div>
+    <form id="saesForm" class="form-grid" onsubmit="return false;">
+      <div class="field">
+        <label id="ptLabel">Plaintext (16 bit — biner atau hex)</label>
+        <input type="text" id="ptInput" placeholder="cth: D728 (hex) atau 16 bit biner">
+        <span class="hint">4 digit hex atau 16 digit biner</span>
+        <span class="errmsg" id="ptErr"></span>
+      </div>
+      <div class="field">
+        <label>Key (16 bit — biner atau hex)</label>
+        <input type="text" id="keyInput" placeholder="cth: 4AF5 (hex) atau 16 bit biner">
+        <span class="hint">4 digit hex atau 16 digit biner</span>
+        <span class="errmsg" id="keyErr"></span>
+      </div>
+    </form>
+    <div class="example-box">Contoh kasus uji: <button id="fillExample">isi otomatis (PT=D728, K=4AF5)</button></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn">Submit</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="panel result-box" id="resultBox">
+    <div class="result-head">
+      <h2 style="margin:0;"><span class="dot"></span><span id="resultLabel">Hasil Ciphertext</span></h2>
+      <button class="copy-btn" id="copyResult">Salin</button>
+    </div>
+    <div class="result-value" id="resultValue">—</div>
+    <div class="bytegrid" id="resultBits"></div>
+  </div>
+
+  <div class="panel" id="solutionPanel" style="display:none;">
+    <div class="toolbar-steps">
+      <h2 style="margin:0;"><span class="dot"></span>Solusi Penyelesaian</h2>
+      <div class="exp-col">
+        <button class="link-btn" id="expandAll">Buka semua</button>
+        <button class="link-btn" id="collapseAll">Tutup semua</button>
+      </div>
+    </div>
+    <button class="btn btn-toggle" id="toggleSolution" style="margin-bottom:16px;">Tampilkan Solusi Penyelesaian</button>
+    <div id="stepsWrap"></div>
+  </div>
+</div>
+
+<footer class="site-footer"><div class="container">Clypher — Simulasi Algoritma Kriptografi · UAS Kriptografi</div></footer>
+
+<script src="../js/common.js"></script>
+<script src="../js/saes.js"></script>
+<script>
+  const ctl = initModePage();
+
+  document.addEventListener('modechange', (e) => {
+    const isEnc = e.detail === 'enc';
+    $('#ptLabel').textContent = isEnc ? 'Plaintext (16 bit — biner atau hex)' : 'Ciphertext (16 bit — biner atau hex)';
+    resetForm('#saesForm');
+  });
+
+  $('#fillExample').addEventListener('click', () => {
+    $('#ptInput').value = 'D728';
+    $('#keyInput').value = '4AF5';
+  });
+
+  $('#resetBtn').addEventListener('click', () => resetForm('#saesForm'));
+
+  function toHex16(inputEl, errEl, label) {
+    const v = inputEl.value.trim().replace(/^0x/i, '');
+    if (!v) { showErr(inputEl, errEl, `${label} tidak boleh kosong.`); return null; }
+    if (isHexStr(v) && v.length === 4) { clearErr(inputEl, errEl); return v.toUpperCase(); }
+    if (isBinaryStr(v) && v.length === 16) { clearErr(inputEl, errEl); return binToHex(v); }
+    showErr(inputEl, errEl, `${label} harus 4 digit hex atau 16 digit biner.`);
+    return null;
+  }
+
+  $('#submitBtn').addEventListener('click', () => {
+    const pt = toHex16($('#ptInput'), $('#ptErr'), 'Plaintext/Ciphertext');
+    const key = toHex16($('#keyInput'), $('#keyErr'), 'Key');
+    if (pt === null || key === null) return;
+
+    const mode = ctl.getMode();
+    const { result, steps } = mode === 'enc' ? SAES.encrypt(pt, key) : SAES.decrypt(pt, key);
+
+    $('#resultLabel').textContent = mode === 'enc' ? 'Hasil Ciphertext' : 'Hasil Plaintext';
+    $('#resultValue').textContent = `${result}  (biner: ${hexToBin(result,16)})`;
+    renderBitGrid($('#resultBits'), hexToBin(result, 16));
+    $('#resultBox').classList.add('show');
+
+    $('#solutionPanel').style.display = 'block';
+    renderSteps($('#stepsWrap'), steps);
+  });
+</script>
+</body>
+</html>

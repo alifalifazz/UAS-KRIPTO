@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clypher — Simulasi Algoritma Kriptografi</title>
+<meta name="description" content="Simulasi step-by-step DES, S-DES, AES, dan S-AES.">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="index.html" class="brand"><span class="brand-mark">CL</span>Clypher</a>
+    <nav class="nav-links">
+      <a href="modules/des.html">DES</a>
+      <a href="modules/sdes.html">S-DES</a>
+      <a href="modules/aes.html">AES</a>
+      <a href="modules/saes.html">S-AES</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <section class="hero">
+    <span class="eyebrow">UAS - Kriptografi</span>
+    <h1>Empat algoritma simetris, <span class="hl">setiap bit dijelaskan.</span></h1>
+    <p class="lead">Clypher membedah proses enkripsi dan dekripsi DES, S-DES, AES, dan S-AES tahap demi tahap dari pembentukan subkey hingga blok akhir sehingga hasil program dapat diverifikasi langsung terhadap perhitungan manual.</p>
+
+    <div class="cipher-strip">
+      <div class="strip-head">
+        <span>plaintext.trace</span>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="strip-body" id="cipherStrip"></div>
+    </div>
+  </section>
+
+  <div class="section-label">Pilih Modul Simulasi</div>
+  <div class="module-grid">
+    <a class="mod-card" href="modules/des.html">
+      <span class="go">↗</span>
+      <span class="tag">MODUL 01</span>
+      <h3>DES</h3>
+      <p>Feistel network 16 ronde klasik dengan blok 64 bit.</p>
+      <div class="specs"><span><b>64-bit</b> blok</span><span><b>64-bit</b> key</span><span><b>16</b> ronde</span></div>
+    </a>
+    <a class="mod-card" href="modules/sdes.html">
+      <span class="go">↗</span>
+      <span class="tag">MODUL 02</span>
+      <h3>S-DES</h3>
+      <p>Versi mini DES untuk memahami struktur Feistel dasar.</p>
+      <div class="specs"><span><b>8-bit</b> blok</span><span><b>10-bit</b> key</span><span><b>2</b> ronde</span></div>
+    </a>
+    <a class="mod-card" href="modules/aes.html">
+      <span class="go">↗</span>
+      <span class="tag">MODUL 03</span>
+      <h3>AES-128</h3>
+      <p>Standar substitusi-permutasi modern dengan state 4×4 byte.</p>
+      <div class="specs"><span><b>128-bit</b> blok</span><span><b>128-bit</b> key</span><span><b>10</b> ronde</span></div>
+    </a>
+    <a class="mod-card" href="modules/saes.html">
+      <span class="go">↗</span>
+      <span class="tag">MODUL 04</span>
+      <h3>S-AES</h3>
+      <p>Versi mini AES dengan aritmetika GF(2⁴) yang ringkas.</p>
+      <div class="specs"><span><b>16-bit</b> blok</span><span><b>16-bit</b> key</span><span><b>2</b> ronde</span></div>
+    </a>
+  </div>
+
+  <div class="section-label">Yang Bisa Dilakukan Aplikasi</div>
+  <div class="features">
+    <div class="feature">
+      <span class="num">01</span>
+      <h4>Step-by-step penuh</h4>
+      <p>Key generation, permutasi, substitusi S-Box, XOR, hingga round function ditampilkan berurutan dan dapat dibuka/tutup per tahap.</p>
+    </div>
+    <div class="feature">
+      <span class="num">02</span>
+      <h4>Verifikasi manual</h4>
+      <p>Setiap modul menerima input biner maupun hex, sehingga hasil aplikasi dapat langsung dicocokkan dengan perhitungan tulis tangan.</p>
+    </div>
+    <div class="feature">
+      <span class="num">03</span>
+      <h4>Enkripsi &amp; Dekripsi dua arah</h4>
+      <p>Seluruh modul mendukung mode enkripsi maupun dekripsi dengan penjadwalan subkey yang benar untuk masing-masing arah.</p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer"><div class="container">Clypher — Simulasi Algoritma Kriptografi · UAS Kriptografi</div></footer>
+
+<script>
+  // signature: strip bit yang "menyala" bergantian, merepresentasikan proses bit-per-bit
+  const bits = '1010110100111001';
+  const strip = document.getElementById('cipherStrip');
+  bits.split('').forEach((b, i) => {
+    const span = document.createElement('span');
+    span.className = 'bitchip';
+    span.textContent = b;
+    strip.appendChild(span);
+  });
+  const arrow = document.createElement('span');
+  arrow.className = 'arrow';
+  arrow.textContent = '→ AES / DES →';
+  strip.appendChild(arrow);
+  bits.split('').reverse().forEach((b) => {
+    const span = document.createElement('span');
+    span.className = 'bitchip';
+    span.textContent = (parseInt(b) ^ 1);
+    strip.appendChild(span);
+  });
+
+  const chips = document.querySelectorAll('.bitchip');
+  let idx = 0;
+  setInterval(() => {
+    chips.forEach(c => c.classList.remove('hot'));
+    if (chips[idx]) chips[idx].classList.add('hot');
+    idx = (idx + 1) % chips.length;
+  }, 220);
+</script>
+</body>
+</html>

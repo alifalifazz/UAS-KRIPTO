@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AES — Simulasi Kriptografi</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">CL</span>Clypher</a>
+    <nav class="nav-links">
+      <a href="des.html">DES</a>
+      <a href="sdes.html">S-DES</a>
+      <a href="aes.html" class="active">AES</a>
+      <a href="saes.html">S-AES</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="mod-header">
+    <span class="badge">MODUL 3 / 4</span>
+    <h1>Advanced Encryption Standard (AES-128)</h1>
+    <p>Standar enkripsi modern berbasis substitusi-permutasi — state 4×4 byte, 10 ronde, kunci 128 bit.</p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="dot"></span>Input</h2>
+    <div class="mode-toggle" style="margin-bottom:18px;">
+      <button data-mode="enc" class="active">Enkripsi</button>
+      <button data-mode="dec">Dekripsi</button>
+    </div>
+    <form id="aesForm" class="form-grid" onsubmit="return false;">
+      <div class="field">
+        <label id="ptLabel">Plaintext (128 bit hex)</label>
+        <input type="text" id="ptInput" placeholder="cth: 00112233445566778899AABBCCDDEEFF">
+        <span class="hint">32 digit hex (state 4x4 byte)</span>
+        <span class="errmsg" id="ptErr"></span>
+      </div>
+      <div class="field">
+        <label>Key (128 bit hex)</label>
+        <input type="text" id="keyInput" placeholder="cth: 000102030405060708090A0B0C0D0E0F">
+        <span class="hint">32 digit hex</span>
+        <span class="errmsg" id="keyErr"></span>
+      </div>
+    </form>
+    <div class="example-box">Contoh kasus uji (FIPS-197): <button id="fillExample">isi otomatis</button></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn">Submit</button>
+      <button class="btn btn-secondary" id="resetBtn">Reset</button>
+    </div>
+  </div>
+
+  <div class="panel result-box" id="resultBox">
+    <div class="result-head">
+      <h2 style="margin:0;"><span class="dot"></span><span id="resultLabel">Hasil Ciphertext</span></h2>
+      <button class="copy-btn" id="copyResult">Salin</button>
+    </div>
+    <div class="result-value" id="resultValue">—</div>
+    <div class="bytegrid" id="resultBits"></div>
+  </div>
+
+  <div class="panel" id="solutionPanel" style="display:none;">
+    <div class="toolbar-steps">
+      <h2 style="margin:0;"><span class="dot"></span>Solusi Penyelesaian</h2>
+      <div class="exp-col">
+        <button class="link-btn" id="expandAll">Buka semua</button>
+        <button class="link-btn" id="collapseAll">Tutup semua</button>
+      </div>
+    </div>
+    <button class="btn btn-toggle" id="toggleSolution" style="margin-bottom:16px;">Tampilkan Solusi Penyelesaian</button>
+    <div id="stepsWrap"></div>
+  </div>
+</div>
+
+<footer class="site-footer"><div class="container">Clypher — Simulasi Algoritma Kriptografi · UAS Kriptografi</div></footer>
+
+<script src="../js/common.js"></script>
+<script src="../js/aes.js"></script>
+<script>
+  const ctl = initModePage();
+
+  document.addEventListener('modechange', (e) => {
+    const isEnc = e.detail === 'enc';
+    $('#ptLabel').textContent = isEnc ? 'Plaintext (128 bit hex)' : 'Ciphertext (128 bit hex)';
+    resetForm('#aesForm');
+  });
+
+  $('#fillExample').addEventListener('click', () => {
+    $('#ptInput').value = '00112233445566778899AABBCCDDEEFF';
+    $('#keyInput').value = '000102030405060708090A0B0C0D0E0F';
+  });
+
+  $('#resetBtn').addEventListener('click', () => resetForm('#aesForm'));
+
+  function validateHexField(inputEl, errEl, hexLen, label) {
+    const v = inputEl.value.trim().replace(/^0x/i, '');
+    if (!v) { showErr(inputEl, errEl, `${label} tidak boleh kosong.`); return null; }
+    if (!isHexStr(v) || v.length !== hexLen) {
+      showErr(inputEl, errEl, `${label} harus hex sepanjang ${hexLen} digit (${hexLen * 4} bit).`);
+      return null;
+    }
+    clearErr(inputEl, errEl);
+    return v.toUpperCase();
+  }
+
+  $('#submitBtn').addEventListener('click', () => {
+    const pt = validateHexField($('#ptInput'), $('#ptErr'), 32, 'Plaintext/Ciphertext');
+    const key = validateHexField($('#keyInput'), $('#keyErr'), 32, 'Key');
+    if (pt === null || key === null) return;
+
+    const mode = ctl.getMode();
+    const { result, steps } = mode === 'enc' ? AES.encrypt(pt, key) : AES.decrypt(pt, key);
+
+    $('#resultLabel').textContent = mode === 'enc' ? 'Hasil Ciphertext' : 'Hasil Plaintext';
+    $('#resultValue').textContent = `${result} (hex)`;
+    const bytes = result.match(/.{1,2}/g) || [];
+    renderByteGrid($('#resultBits'), bytes);
+    $('#resultBox').classList.add('show');
+
+    $('#solutionPanel').style.display = 'block';
+    renderSteps($('#stepsWrap'), steps);
+  });
+</script>
+</body>
+</html>
